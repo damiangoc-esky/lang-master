@@ -12,7 +12,9 @@ lang-master/
     ├── Data/ApplicationDbContext.cs   # EF Core DbContext (Npgsql/Postgres)
     ├── Repositories/DatabaseRepository.cs  # generic EF repository
     ├── Migrations/                    # EF Core migrations (InitialCreate)
-    ├── Program.cs                     # DI + auto-applies migrations on startup
+    ├── Data/DbSeeder.cs               # idempotent startup seed (sample groups/pairs)
+    ├── Program.cs                     # DI + auto-applies migrations + seeds on startup
+    ├── wwwroot/                       # static frontend (index.html/app.js/styles.css) served by the API
     ├── Dockerfile                     # multi-stage build; Railway deploys from this
     ├── docker-compose.yml             # local dev: API + postgres:17-alpine
     ├── appsettings.json               # dead Cloud SQL string; overridden by env var on Railway
@@ -24,9 +26,29 @@ lang-master/
 From `LanguageLearningAPI/`:
 ```
 dotnet build                   # compiles; no DB needed
-docker compose up --build      # run API + Postgres locally (API on :8080, Swagger at /swagger)
 dotnet ef migrations add <Name>  # add a migration after model changes
 ```
+
+Two ways to run locally — both serve the frontend + API + Swagger from one process:
+
+**1. Full stack in containers** (production-like; the whole app + DB):
+```
+docker compose up --build      # or: podman compose up --build -d   (this machine uses Podman)
+# App on http://localhost:8080  (frontend at /, Swagger at /swagger)
+# podman: if `podman compose` can't find the file, pass -f <abs path>/docker-compose.yml
+# stop: docker|podman compose down     (add -v to also wipe the DB + reseed)
+```
+
+**2. IDE / Kestrel** (faster C# inner loop — no image rebuild):
+```
+docker|podman compose up -d db   # start ONLY Postgres (published on localhost:5432)
+# then Run the "http" (or "https") profile in your IDE, or:
+dotnet run --launch-profile http
+# App on http://localhost:5211
+```
+The `http`/`https` launch profiles (`Properties/launchSettings.json`) set the
+`ConnectionStrings__DefaultConnection` env var to the compose Postgres. There is **no IIS
+Express profile** — it's not installed/needed; the app runs on Kestrel everywhere.
 
 ## Architecture notes
 
