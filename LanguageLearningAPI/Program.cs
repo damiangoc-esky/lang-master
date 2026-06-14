@@ -43,6 +43,10 @@ if (app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+// Serve the static frontend from wwwroot (index.html is the SPA entry point).
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseAuthorization();
 
 app.MapControllers();
