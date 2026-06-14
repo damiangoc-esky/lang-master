@@ -22,18 +22,25 @@ CREATE TABLE LearningPlan (
 );
 
 -- Create TranslationGroups Table
+-- SourceLanguage / TargetLanguage are ISO 639-1 codes (e.g. 'pl', 'en') and
+-- define the translation direction for every pair in the group. This makes the
+-- app language-pair agnostic rather than hard-coded to Polish -> English.
 CREATE TABLE TranslationGroups (
     GroupID SERIAL PRIMARY KEY,
     GroupName VARCHAR(255) NOT NULL,
-    Description TEXT
+    Description TEXT,
+    SourceLanguage VARCHAR(10) NOT NULL DEFAULT 'pl',
+    TargetLanguage VARCHAR(10) NOT NULL DEFAULT 'en'
 );
 
 -- Create TranslationPairs Table
+-- SourceContent / TargetContent are language-agnostic; the actual languages are
+-- defined on the parent TranslationGroup.
 CREATE TABLE TranslationPairs (
     PairID SERIAL PRIMARY KEY,
     GroupID INT REFERENCES TranslationGroups(GroupID),
-    PolishContent TEXT NOT NULL,
-    EnglishTranslation TEXT NOT NULL,
+    SourceContent TEXT NOT NULL,
+    TargetContent TEXT NOT NULL,
     Type VARCHAR(50) CHECK (Type IN ('word', 'phrase', 'sentence')) NOT NULL
 );
 ```

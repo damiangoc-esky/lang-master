@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using LanguageLearningAPI.Data;
 using LanguageLearningAPI.Models;
 
 namespace LanguageLearningAPI.Repositories
@@ -22,7 +23,7 @@ namespace LanguageLearningAPI.Repositories
         }
 
         // Read
-        public async Task<TEntity> GetEntityByIdAsync<TEntity>(int id) where TEntity : class
+        public async Task<TEntity?> GetEntityByIdAsync<TEntity>(int id) where TEntity : class
         {
             return await _context.Set<TEntity>().FindAsync(id);
         }
