@@ -88,6 +88,33 @@ body {
 h2.view-title { margin: 0 0 4px; font-size: 1.6rem; }
 .subtitle { color: var(--muted); margin: 0 0 24px; }
 
+/* --- language tabs --- */
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+}
+.tab {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.12s;
+}
+.tab:hover { color: var(--text); border-color: var(--accent); }
+.tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0c1030;
+}
+
 /* --- group cards --- */
 .grid {
     display: grid;

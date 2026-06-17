@@ -23,6 +23,14 @@ function showError(err) {
 // ---- data (cached for the session) ---------------------------------------
 let groups = null;     // [{groupID, groupName, description, sourceLanguage, targetLanguage}]
 let pairsByGroup = null; // { [groupID]: [pair, ...] }
+let activeLang = "all";  // currently selected language tab (source language code)
+
+// ISO 639-1 -> display name (falls back to upper-cased code)
+const LANG_NAMES = {
+    en: "English", pl: "Polish", es: "Spanish", it: "Italian",
+    de: "German", fr: "French", pt: "Portuguese",
+};
+const langLabel = (code) => LANG_NAMES[code] || String(code).toUpperCase();
 
 async function loadData() {
     const [g, pairs] = await Promise.all([
@@ -42,7 +50,25 @@ function renderGroups() {
         app.innerHTML = `<p class="empty">No translation groups yet.</p>`;
         return;
     }
-    const cards = groups.map((g) => {
+
+    // distinct source languages present, for the tab bar
+    const langs = [...new Set(groups.map((g) => g.sourceLanguage))]
+        .sort((a, b) => langLabel(a).localeCompare(langLabel(b)));
+
+    // a previously-selected language may no longer exist after a reload
+    if (activeLang !== "all" && !langs.includes(activeLang)) activeLang = "all";
+
+    const tabFor = (code, label) =>
+        `<button class="tab${activeLang === code ? " active" : ""}" data-lang="${esc(code)}">${esc(label)}</button>`;
+    const tabs = [tabFor("all", "All")]
+        .concat(langs.map((c) => tabFor(c, langLabel(c))))
+        .join("");
+
+    const visible = activeLang === "all"
+        ? groups
+        : groups.filter((g) => g.sourceLanguage === activeLang);
+
+    const cards = visible.map((g) => {
         const count = (pairsByGroup[g.groupID] || []).length;
         return `
         <div class="card" data-group="${g.groupID}">
@@ -58,8 +84,13 @@ function renderGroups() {
     app.innerHTML = `
         <h2 class="view-title">Translation groups</h2>
         <p class="subtitle">Pick a set to browse or practice.</p>
-        <div class="grid">${cards}</div>`;
+        <div class="tabs" role="tablist">${tabs}</div>
+        ${visible.length
+            ? `<div class="grid">${cards}</div>`
+            : `<p class="empty">No groups for ${esc(langLabel(activeLang))} yet.</p>`}`;
 
+    app.querySelectorAll(".tab").forEach((t) =>
+        t.addEventListener("click", () => { activeLang = t.dataset.lang; renderGroups(); }));
     app.querySelectorAll(".card").forEach((c) =>
         c.addEventListener("click", () => renderGroupDetail(Number(c.dataset.group))));
 }
