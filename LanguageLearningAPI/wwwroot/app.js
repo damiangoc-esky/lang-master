@@ -102,7 +102,6 @@ function renderGroupDetail(groupId) {
         <tr>
             <td>${esc(p.sourceContent)}</td>
             <td>${esc(p.targetContent)}</td>
-            <td><span class="type-tag">${esc(p.type)}</span></td>
         </tr>`).join("");
 
     app.innerHTML = `
@@ -120,7 +119,6 @@ function renderGroupDetail(groupId) {
             <thead><tr>
                 <th>${esc(g.sourceLanguage)}</th>
                 <th>${esc(g.targetLanguage)}</th>
-                <th>Type</th>
             </tr></thead>
             <tbody>${rows}</tbody>
         </table>` : `<p class="empty">No pairs in this group yet.</p>`}`;
