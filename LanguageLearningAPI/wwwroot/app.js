@@ -17,7 +17,7 @@ async function getJSON(path) {
 }
 
 function showError(err) {
-    app.innerHTML = `<div class="error">⚠️ Could not load data: ${esc(err.message)}</div>`;
+    app.innerHTML = `<div class="error">⚠️ Nie udało się wczytać danych: ${esc(err.message)}</div>`;
 }
 
 // ---- data (cached for the session) ---------------------------------------
@@ -25,12 +25,20 @@ let groups = null;     // [{groupID, groupName, description, sourceLanguage, tar
 let pairsByGroup = null; // { [groupID]: [pair, ...] }
 let activeLang = "all";  // currently selected language tab (target language code = the language being learned)
 
-// ISO 639-1 -> display name (falls back to upper-cased code)
+// ISO 639-1 -> Polish display name (falls back to upper-cased code)
 const LANG_NAMES = {
-    en: "English", pl: "Polish", es: "Spanish", it: "Italian",
-    de: "German", fr: "French", pt: "Portuguese",
+    en: "Angielski", pl: "Polski", es: "Hiszpański", it: "Włoski",
+    de: "Niemiecki", fr: "Francuski", pt: "Portugalski",
 };
 const langLabel = (code) => LANG_NAMES[code] || String(code).toUpperCase();
+
+// Polish plural for the item/word count: 1 słówko, 2-4 słówka, 5+ słówek
+function plWords(n) {
+    const mod10 = n % 10, mod100 = n % 100;
+    if (n === 1) return "słówko";
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "słówka";
+    return "słówek";
+}
 
 async function loadData() {
     const [g, pairs] = await Promise.all([
@@ -47,7 +55,7 @@ async function loadData() {
 // ---- views ----------------------------------------------------------------
 function renderGroups() {
     if (!groups.length) {
-        app.innerHTML = `<p class="empty">No translation groups yet.</p>`;
+        app.innerHTML = `<p class="empty">Brak grup tłumaczeń.</p>`;
         return;
     }
 
@@ -60,7 +68,7 @@ function renderGroups() {
 
     const tabFor = (code, label) =>
         `<button class="tab${activeLang === code ? " active" : ""}" data-lang="${esc(code)}">${esc(label)}</button>`;
-    const tabs = [tabFor("all", "All")]
+    const tabs = [tabFor("all", "Wszystkie")]
         .concat(langs.map((c) => tabFor(c, langLabel(c))))
         .join("");
 
@@ -75,19 +83,19 @@ function renderGroups() {
             <h3>${esc(g.groupName)}</h3>
             <p>${esc(g.description || "")}</p>
             <div class="card-meta">
-                <span class="badge">${esc(g.sourceLanguage)} → ${esc(g.targetLanguage)}</span>
-                <span class="count">${count} ${count === 1 ? "item" : "items"}</span>
+                <span class="badge">${esc(langLabel(g.sourceLanguage))} → ${esc(langLabel(g.targetLanguage))}</span>
+                <span class="count">${count} ${plWords(count)}</span>
             </div>
         </div>`;
     }).join("");
 
     app.innerHTML = `
-        <h2 class="view-title">Translation groups</h2>
-        <p class="subtitle">Pick a set to browse or practice.</p>
+        <h2 class="view-title">Grupy tłumaczeń</h2>
+        <p class="subtitle">Wybierz zestaw, aby przeglądać lub ćwiczyć.</p>
         <div class="tabs" role="tablist">${tabs}</div>
         ${visible.length
             ? `<div class="grid">${cards}</div>`
-            : `<p class="empty">No groups for ${esc(langLabel(activeLang))} yet.</p>`}`;
+            : `<p class="empty">Brak grup dla języka ${esc(langLabel(activeLang))}.</p>`}`;
 
     app.querySelectorAll(".tab").forEach((t) =>
         t.addEventListener("click", () => { activeLang = t.dataset.lang; renderGroups(); }));
@@ -105,23 +113,23 @@ function renderGroupDetail(groupId) {
         </tr>`).join("");
 
     app.innerHTML = `
-        <div class="crumbs"><a id="back">← All groups</a></div>
+        <div class="crumbs"><a id="back">← Wszystkie grupy</a></div>
         <h2 class="view-title">${esc(g.groupName)}</h2>
         <p class="subtitle">
-            <span class="badge">${esc(g.sourceLanguage)} → ${esc(g.targetLanguage)}</span>
+            <span class="badge">${esc(langLabel(g.sourceLanguage))} → ${esc(langLabel(g.targetLanguage))}</span>
             &nbsp; ${esc(g.description || "")}
         </p>
         <div class="toolbar">
-            <button class="btn primary" id="practice" ${pairs.length ? "" : "disabled"}>▶ Practice (${pairs.length})</button>
+            <button class="btn primary" id="practice" ${pairs.length ? "" : "disabled"}>▶ Ćwicz (${pairs.length})</button>
         </div>
         ${pairs.length ? `
         <table>
             <thead><tr>
-                <th>${esc(g.sourceLanguage)}</th>
-                <th>${esc(g.targetLanguage)}</th>
+                <th>${esc(langLabel(g.sourceLanguage))}</th>
+                <th>${esc(langLabel(g.targetLanguage))}</th>
             </tr></thead>
             <tbody>${rows}</tbody>
-        </table>` : `<p class="empty">No pairs in this group yet.</p>`}`;
+        </table>` : `<p class="empty">Brak par w tej grupie.</p>`}`;
 
     el("#back").addEventListener("click", renderGroups);
     const practice = el("#practice");
@@ -139,18 +147,18 @@ function renderPractice(g, pairs) {
         app.innerHTML = `
             <div class="crumbs"><a id="back">← ${esc(g.groupName)}</a></div>
             <div class="flash-wrap">
-                <div class="progress">Card ${i + 1} / ${pairs.length}</div>
+                <div class="progress">Karta ${i + 1} / ${pairs.length}</div>
                 <div class="flashcard" id="card">
-                    <div class="flash-lang">${esc(g.sourceLanguage)}</div>
+                    <div class="flash-lang">${esc(langLabel(g.sourceLanguage))}</div>
                     <div class="flash-term">${esc(p.sourceContent)}</div>
                     ${revealed
-                        ? `<div class="flash-lang" style="margin-top:18px">${esc(g.targetLanguage)}</div>
+                        ? `<div class="flash-lang" style="margin-top:18px">${esc(langLabel(g.targetLanguage))}</div>
                            <div class="flash-answer">${esc(p.targetContent)}</div>`
-                        : `<div class="flash-hint">Click to reveal</div>`}
+                        : `<div class="flash-hint">Kliknij, aby odsłonić</div>`}
                 </div>
                 <div class="flash-controls">
-                    <button class="btn" id="prev" ${i === 0 ? "disabled" : ""}>← Prev</button>
-                    <button class="btn primary" id="next" ${i === pairs.length - 1 ? "disabled" : ""}>Next →</button>
+                    <button class="btn" id="prev" ${i === 0 ? "disabled" : ""}>← Poprzednia</button>
+                    <button class="btn primary" id="next" ${i === pairs.length - 1 ? "disabled" : ""}>Następna →</button>
                 </div>
             </div>`;
 
