@@ -2,6 +2,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LanguageLearningAPI.Models
 {
+    // Difficulty level of a translation group, used to group/colour them in the UI.
+    public enum GroupLevel
+    {
+        Beginner,
+        Medium,
+        Advanced
+    }
+
     public class TranslationGroup
     {
         [Key]
@@ -12,6 +20,10 @@ namespace LanguageLearningAPI.Models
         public string GroupName { get; set; } = string.Empty;
 
         public string? Description { get; set; }
+
+        // Difficulty category; defaults to Beginner for existing/new rows.
+        [Required]
+        public GroupLevel Level { get; set; } = GroupLevel.Beginner;
 
         // ISO 639-1 language codes (e.g. "pl", "en") describing the translation
         // direction for every pair in this group: SourceContent -> TargetContent.

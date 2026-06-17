@@ -32,6 +32,13 @@ const LANG_NAMES = {
 };
 const langLabel = (code) => LANG_NAMES[code] || String(code).toUpperCase();
 
+// Difficulty level -> Polish label + ordering (Beginner < Medium < Advanced)
+const LEVEL_NAMES = { Beginner: "Początkujący", Medium: "Średni", Advanced: "Zaawansowany" };
+const LEVEL_ORDER = { Beginner: 0, Medium: 1, Advanced: 2 };
+const levelOf = (g) => g.level || "Beginner";
+const levelLabel = (lvl) => LEVEL_NAMES[lvl] || lvl;
+const levelClass = (lvl) => `lvl-${String(lvl).toLowerCase()}`;
+
 // Polish plural for the item/word count: 1 słówko, 2-4 słówka, 5+ słówek
 function plWords(n) {
     const mod10 = n % 10, mod100 = n % 100;
@@ -63,23 +70,27 @@ function renderGroups() {
     const langs = [...new Set(groups.map((g) => g.targetLanguage))]
         .sort((a, b) => langLabel(a).localeCompare(langLabel(b)));
 
-    // a previously-selected language may no longer exist after a reload
-    if (activeLang !== "all" && !langs.includes(activeLang)) activeLang = "all";
+    // default to (or fall back to) the first language; there is no "all" tab
+    if (!langs.includes(activeLang)) activeLang = langs[0];
 
     const tabFor = (code, label) =>
         `<button class="tab${activeLang === code ? " active" : ""}" data-lang="${esc(code)}">${esc(label)}</button>`;
-    const tabs = [tabFor("all", "Wszystkie")]
-        .concat(langs.map((c) => tabFor(c, langLabel(c))))
-        .join("");
+    const tabs = langs.map((c) => tabFor(c, langLabel(c))).join("");
 
-    const visible = activeLang === "all"
-        ? groups
-        : groups.filter((g) => g.targetLanguage === activeLang);
+    const visible = groups
+        .filter((g) => g.targetLanguage === activeLang)
+        // show easier groups first, then alphabetically within a level
+        .slice()
+        .sort((a, b) =>
+            (LEVEL_ORDER[levelOf(a)] ?? 9) - (LEVEL_ORDER[levelOf(b)] ?? 9) ||
+            a.groupName.localeCompare(b.groupName));
 
     const cards = visible.map((g) => {
         const count = (pairsByGroup[g.groupID] || []).length;
+        const lvl = levelOf(g);
         return `
-        <div class="card" data-group="${g.groupID}">
+        <div class="card ${levelClass(lvl)}" data-group="${g.groupID}">
+            <span class="level ${levelClass(lvl)}">${esc(levelLabel(lvl))}</span>
             <h3>${esc(g.groupName)}</h3>
             <p>${esc(g.description || "")}</p>
             <div class="card-meta">

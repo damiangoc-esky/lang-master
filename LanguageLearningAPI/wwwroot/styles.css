@@ -8,6 +8,9 @@
     --accent: #6c8cff;
     --accent-2: #38d39f;
     --danger: #ff6b8a;
+    --lvl-beginner: #38d39f;
+    --lvl-medium: #f5c451;
+    --lvl-advanced: #ff6b8a;
     --radius: 14px;
     --shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
 }
@@ -125,6 +128,7 @@ h2.view-title { margin: 0 0 4px; font-size: 1.6rem; }
 .card {
     background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
     border: 1px solid var(--border);
+    border-left-width: 5px;
     border-radius: var(--radius);
     padding: 18px;
     cursor: pointer;
@@ -135,6 +139,27 @@ h2.view-title { margin: 0 0 4px; font-size: 1.6rem; }
     border-color: var(--accent);
     box-shadow: var(--shadow);
 }
+/* category-coloured left border (kept on hover: longhand wins over the
+   shorthand border-color above thanks to source order) */
+.card.lvl-beginner { border-left-color: var(--lvl-beginner); }
+.card.lvl-medium   { border-left-color: var(--lvl-medium); }
+.card.lvl-advanced { border-left-color: var(--lvl-advanced); }
+
+/* difficulty-level chip on each card */
+.level {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.level.lvl-beginner { background: rgba(56, 211, 159, 0.15); border: 1px solid var(--lvl-beginner); color: #aef2d8; }
+.level.lvl-medium   { background: rgba(245, 196, 81, 0.15); border: 1px solid var(--lvl-medium); color: #ffe7ad; }
+.level.lvl-advanced { background: rgba(255, 107, 138, 0.15); border: 1px solid var(--lvl-advanced); color: #ffd5de; }
+
 .card h3 { margin: 0 0 6px; font-size: 1.15rem; }
 .card p { margin: 0 0 14px; color: var(--muted); font-size: 0.9rem; min-height: 1.2em; }
 .card-meta { display: flex; justify-content: space-between; align-items: center; }
@@ -243,10 +268,9 @@ tbody td { overflow-wrap: anywhere; }
     /* cards/tabs respond to taps instead of hover on touch */
     .card:active { transform: translateY(-2px); border-color: var(--accent); }
 
-    /* tabs become a single swipeable row instead of wrapping tall */
-    .tabs { flex-wrap: nowrap; overflow-x: auto; gap: 6px; padding-bottom: 12px; scrollbar-width: none; }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tab { flex: 0 0 auto; padding: 7px 14px; font-size: 0.85rem; }
+    /* tabs wrap onto new lines when they don't fit the viewport width */
+    .tabs { gap: 6px; padding-bottom: 12px; }
+    .tab { padding: 7px 14px; font-size: 0.85rem; }
 
     thead th, tbody td { padding: 9px 10px; }
     tbody td { font-size: 0.95rem; }

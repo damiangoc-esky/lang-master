@@ -41,6 +41,10 @@ namespace LanguageLearningAPI.Data
             modelBuilder.Entity<TranslationGroup>(entity =>
             {
                 entity.ToTable("TranslationGroups");
+                // Persist enum as text; existing rows default to 'Beginner'.
+                entity.Property(g => g.Level)
+                      .HasConversion<string>()
+                      .HasDefaultValue(GroupLevel.Beginner);
             });
 
             modelBuilder.Entity<TranslationPair>(entity =>
