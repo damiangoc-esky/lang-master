@@ -219,3 +219,46 @@ tbody tr:hover { background: rgba(36, 42, 82, 0.5); }
 .flash-hint { color: var(--muted); font-size: 0.82rem; margin-top: 18px; }
 .flash-answer { font-size: 1.9rem; font-weight: 600; color: var(--accent-2); }
 .flash-controls { display: flex; gap: 12px; }
+
+/* --- responsive / mobile --- */
+/* Avoid the grey tap flash on touch devices and stop iOS auto-zooming text. */
+* { -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
+
+/* Long phrases (e.g. full sentences) should wrap, never overflow the row. */
+tbody td { overflow-wrap: anywhere; }
+
+@media (max-width: 640px) {
+    .topbar { padding: 12px 16px; }
+    .brand { font-size: 1.1rem; }
+    .topbar nav a { padding: 6px 10px; }
+
+    .container { padding: 18px 14px 44px; }
+    h2.view-title { font-size: 1.3rem; }
+    .subtitle { margin-bottom: 18px; }
+
+    /* one card per row on phones */
+    .grid { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 16px; }
+    /* cards/tabs respond to taps instead of hover on touch */
+    .card:active { transform: translateY(-2px); border-color: var(--accent); }
+
+    /* tabs become a single swipeable row instead of wrapping tall */
+    .tabs { flex-wrap: nowrap; overflow-x: auto; gap: 6px; padding-bottom: 12px; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { flex: 0 0 auto; padding: 7px 14px; font-size: 0.85rem; }
+
+    thead th, tbody td { padding: 9px 10px; }
+    tbody td { font-size: 0.95rem; }
+
+    .flashcard { min-height: 180px; padding: 24px 18px; border-radius: 16px; }
+    .flash-term, .flash-answer { font-size: 1.5rem; }
+    /* full-width prev/next that are easy to thumb */
+    .flash-controls { width: 100%; max-width: 460px; }
+    .flash-controls .btn { flex: 1; padding: 12px; }
+}
+
+@media (max-width: 380px) {
+    .flash-term, .flash-answer { font-size: 1.3rem; }
+    .card h3 { font-size: 1.05rem; }
+}
