@@ -23,7 +23,7 @@ function showError(err) {
 // ---- data (cached for the session) ---------------------------------------
 let groups = null;     // [{groupID, groupName, description, sourceLanguage, targetLanguage}]
 let pairsByGroup = null; // { [groupID]: [pair, ...] }
-let activeLang = "all";  // currently selected language tab (source language code)
+let activeLang = "all";  // currently selected language tab (target language code = the language being learned)
 
 // ISO 639-1 -> display name (falls back to upper-cased code)
 const LANG_NAMES = {
@@ -51,8 +51,8 @@ function renderGroups() {
         return;
     }
 
-    // distinct source languages present, for the tab bar
-    const langs = [...new Set(groups.map((g) => g.sourceLanguage))]
+    // distinct target languages present (the language being learned), for the tab bar
+    const langs = [...new Set(groups.map((g) => g.targetLanguage))]
         .sort((a, b) => langLabel(a).localeCompare(langLabel(b)));
 
     // a previously-selected language may no longer exist after a reload
@@ -66,7 +66,7 @@ function renderGroups() {
 
     const visible = activeLang === "all"
         ? groups
-        : groups.filter((g) => g.sourceLanguage === activeLang);
+        : groups.filter((g) => g.targetLanguage === activeLang);
 
     const cards = visible.map((g) => {
         const count = (pairsByGroup[g.groupID] || []).length;
