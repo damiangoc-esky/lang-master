@@ -24,6 +24,7 @@ function showError(err) {
 let groups = null;     // [{groupID, groupName, description, sourceLanguage, targetLanguage}]
 let pairsByGroup = null; // { [groupID]: [pair, ...] }
 let activeLang = "all";  // currently selected language tab (target language code = the language being learned)
+let activeLevel = "all"; // currently selected difficulty filter ("all" | Beginner | Medium | Advanced)
 
 // ISO 639-1 -> Polish display name (falls back to upper-cased code)
 const LANG_NAMES = {
@@ -77,8 +78,21 @@ function renderGroups() {
         `<button class="tab${activeLang === code ? " active" : ""}" data-lang="${esc(code)}">${esc(label)}</button>`;
     const tabs = langs.map((c) => tabFor(c, langLabel(c))).join("");
 
+    // difficulty selector: "all" + each level present for the active language
+    const levelsForLang = new Set(
+        groups.filter((g) => g.targetLanguage === activeLang).map(levelOf));
+    if (activeLevel !== "all" && !levelsForLang.has(activeLevel)) activeLevel = "all";
+    const optFor = (val, label) =>
+        `<option value="${esc(val)}"${activeLevel === val ? " selected" : ""}>${esc(label)}</option>`;
+    const levelOptions = [optFor("all", "Wszystkie poziomy")]
+        .concat(["Beginner", "Medium", "Advanced"]
+            .filter((l) => levelsForLang.has(l))
+            .map((l) => optFor(l, levelLabel(l))))
+        .join("");
+
     const visible = groups
         .filter((g) => g.targetLanguage === activeLang)
+        .filter((g) => activeLevel === "all" || levelOf(g) === activeLevel)
         // show easier groups first, then alphabetically within a level
         .slice()
         .sort((a, b) =>
@@ -104,12 +118,17 @@ function renderGroups() {
         <h2 class="view-title">Grupy tłumaczeń</h2>
         <p class="subtitle">Wybierz zestaw, aby przeglądać lub ćwiczyć.</p>
         <div class="tabs" role="tablist">${tabs}</div>
+        <div class="filterbar">
+            <label class="filter-label" for="levelSelect">Poziom trudności:</label>
+            <select id="levelSelect" class="select">${levelOptions}</select>
+        </div>
         ${visible.length
             ? `<div class="grid">${cards}</div>`
-            : `<p class="empty">Brak grup dla języka ${esc(langLabel(activeLang))}.</p>`}`;
+            : `<p class="empty">Brak grup dla wybranych filtrów.</p>`}`;
 
     app.querySelectorAll(".tab").forEach((t) =>
         t.addEventListener("click", () => { activeLang = t.dataset.lang; renderGroups(); }));
+    el("#levelSelect").addEventListener("change", (e) => { activeLevel = e.target.value; renderGroups(); });
     app.querySelectorAll(".card").forEach((c) =>
         c.addEventListener("click", () => renderGroupDetail(Number(c.dataset.group))));
 }
